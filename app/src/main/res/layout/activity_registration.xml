@@ -1,0 +1,78 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/textView_title"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="@dimen/activity_horizontal_margin"
+        android:text="@string/registration_title"
+        android:textAppearance="?android:attr/textAppearanceLarge" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="4"
+        android:animateLayoutChanges="true"
+        android:gravity="center"
+        android:paddingBottom="@dimen/activity_vertical_margin"
+        android:paddingLeft="@dimen/activity_horizontal_margin"
+        android:paddingRight="@dimen/activity_horizontal_margin"
+        android:paddingTop="@dimen/activity_vertical_margin"
+        tools:context="com.sarahehabm.eventreminder.view.RegistrationActivity">
+
+        <Button
+            android:id="@+id/button_google"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/google_red"
+            android:onClick="onGoogleClick"
+            android:text="@string/google"
+            android:textColor="@android:color/white" />
+
+        <Button
+            android:id="@+id/button_facebook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/button_google"
+            android:layout_marginBottom="@dimen/dimen24dp"
+            android:layout_marginTop="@dimen/dimen24dp"
+            android:background="@color/facebook_blue"
+            android:onClick="onFacebookClick"
+            android:text="@string/facebook"
+            android:textColor="@android:color/white" />
+
+        <com.facebook.login.widget.LoginButton
+            android:id="@+id/facebook_login_button"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_below="@+id/button_facebook"
+            android:layout_marginBottom="@dimen/dimen24dp"
+            android:layout_marginTop="@dimen/dimen24dp" />
+
+        <TextView
+            android:id="@+id/textView_google"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dimen15dp"
+            android:gravity="center_horizontal"
+            android:visibility="gone"
+            tools:text="New Text" />
+    </RelativeLayout>
+
+    <Button
+        android:id="@+id/button_finish"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom|end|right"
+        android:background="@android:color/transparent"
+        android:enabled="false"
+        android:onClick="onFinishClick"
+        android:text="@string/finish" />
+</LinearLayout>
