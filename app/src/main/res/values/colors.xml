@@ -1,8 +1,13 @@
 <resources>
 
-    <color name="colorPrimary">#FB8C00</color>
+    <!--<color name="colorPrimary">#FB8C00</color>
     <color name="colorPrimaryDark">#EF6C00</color>
-    <color name="colorAccent">#003F7F</color>
+    <color name="colorAccent">#003F7F</color>-->
+
+    <color name="colorPrimary">#2196F3</color>
+    <color name="colorPrimaryDark">#1976D2</color>
+    <!--<color name="colorAccent">#FFD600</color>-->
+    <color name="colorAccent">#D50000</color>
 
     <color name="black_overlay">#66000000</color>
     <color name="google_red">#dd4b39</color>

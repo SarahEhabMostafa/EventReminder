@@ -16,6 +16,7 @@ import com.facebook.GraphResponse;
 import com.facebook.HttpMethod;
 import com.google.api.client.extensions.android.http.AndroidHttp;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
+import com.google.api.client.googleapis.extensions.android.gms.auth.UserRecoverableAuthIOException;
 import com.google.api.client.http.HttpTransport;
 import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
@@ -89,6 +90,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                             listToContentValuesArray(retrievedEvents));
                     Log.v(TAG, Calendar.getInstance().getTime().toString() + ": Inserted " + numInserted + " rows.");
                 }
+            } catch (UserRecoverableAuthIOException e) {
+//                getContext().getContentResolver().notifyChange(EventsContract.BASE_CONTENT_URI, null, false);
+                //TODO handle authorization exception
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -217,7 +221,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
                 if (event.has("place")) {
                     JSONObject place = event.getJSONObject("place");
-                    String placeName = place == null ? "" : place.getString("name");
+                    String placeName;
+                    if(place.has("name"))
+                        placeName = place == null ? "" : place.getString("name");
+                    else
+                        placeName = "";
 
                     JSONObject placeLocationObject =
                             (place == null || !place.has("location")) ? null :

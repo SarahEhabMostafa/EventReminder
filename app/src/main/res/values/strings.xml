@@ -14,7 +14,7 @@
 
     <string name="facebook_app_id" translatable="false">575898549252373</string>
 
-    <string name="registration_title">Enter the accounts you wish to sync</string>
+    <string name="registration_title">Setup the accounts to sync</string>
     <string name="google">Google</string>
     <string name="facebook">Facebook</string>
     <string name="finish">Finish</string>

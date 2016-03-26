@@ -15,11 +15,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.facebook.CallbackManager;
-import com.facebook.FacebookActivity;
 import com.facebook.FacebookCallback;
 import com.facebook.FacebookException;
+import com.facebook.Profile;
+import com.facebook.ProfileTracker;
+import com.facebook.login.LoginManager;
 import com.facebook.login.LoginResult;
-import com.facebook.login.widget.LoginButton;
 import com.google.api.client.googleapis.extensions.android.gms.auth.GoogleAccountCredential;
 import com.sarahehabm.eventreminder.R;
 import com.sarahehabm.eventreminder.controller.PreferencesUtility;
@@ -30,7 +31,7 @@ import java.util.Arrays;
 
 public class RegistrationActivity extends AppCompatActivity {
 
-    public static final String DEMO_ACCOUNT = "Demo Account";
+//    public static final String DEMO_ACCOUNT = "Demo Account";
     private static final String TAG = RegistrationActivity.class.getSimpleName();
     private GoogleAccountCredential mCredential;
     private CallbackManager callbackManager;
@@ -38,9 +39,9 @@ public class RegistrationActivity extends AppCompatActivity {
 //    private Button button_google;
 //    private TextInputLayout layout_google;
 
-    private TextView textView_google;
-    private Button button_google, button_finish;
-    private LoginButton facebook_login_button;
+    private TextView textView_google, textView_facebook;
+    private Button button_google, button_facebook, button_finish;
+//    private LoginButton facebook_login_button;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -60,23 +61,80 @@ public class RegistrationActivity extends AppCompatActivity {
         setContentView(R.layout.activity_registration);
 
         textView_google = (TextView) findViewById(R.id.textView_google);
+        textView_facebook = (TextView) findViewById(R.id.textView_facebook);
         button_google = (Button) findViewById(R.id.button_google);
+        button_facebook = (Button) findViewById(R.id.button_facebook);
         button_finish = (Button) findViewById(R.id.button_finish);
-        facebook_login_button = (LoginButton) findViewById(R.id.facebook_login_button);
-        facebook_login_button.setReadPermissions(Arrays.asList(/*"user_status",*/ /*"user_friends",*/
-                "public_profile", "user_events"));
+//        facebook_login_button = (LoginButton) findViewById(R.id.facebook_login_button);
+//        facebook_login_button.setReadPermissions(Arrays.asList(/*"user_status",*/ /*"user_friends",*/
+//                "public_profile", "user_events"));
 
         callbackManager = CallbackManager.Factory.create();
-        facebook_login_button.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+        LoginManager.getInstance().registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+
+            private ProfileTracker profileTracker;
+
             @Override
-            public void onSuccess(LoginResult loginResult) {
+            public void onSuccess(final LoginResult loginResult) {
                 Log.e(TAG, "FacebookCallback; onSuccess");
                 String accessToken = loginResult.getAccessToken().getToken();
                 PreferencesUtility.putString(RegistrationActivity.this,
                         PreferencesUtility.KEY_FACEBOOK_ACCESS_TOKEN, accessToken);
 
-                String userId = loginResult.getAccessToken().getUserId();
+                final String userId = loginResult.getAccessToken().getUserId();
                 PreferencesUtility.setFacebookUserId(RegistrationActivity.this, userId);
+
+//                Profile.fetchProfileForCurrentAccessToken();
+                /*GraphRequest request = GraphRequest.newMeRequest(AccessToken.getCurrentAccessToken(),
+                new GraphRequest.GraphJSONObjectCallback(){
+
+                    @Override
+                    public void onCompleted(JSONObject jsonObject, GraphResponse graphResponse) {
+                        Log.v(TAG, "onCompleted");
+                    }
+                });
+//        Bundle parameters = new Bundle();
+//        parameters.putString("fields", "id,name,link");
+//        request.setParameters(parameters);
+        request.executeAsync();*/
+//                final String username;
+                if(Profile.getCurrentProfile() == null) {
+                    profileTracker = new ProfileTracker() {
+                        @Override
+                        protected void onCurrentProfileChanged(Profile profile, Profile profile2) {
+                            // profile2 is the new profile
+                            Log.v("facebook - profile", profile2.getFirstName());
+                            final String tempUsername = profile2.getName();
+                            profileTracker.stopTracking();
+
+                            button_facebook.setVisibility(View.INVISIBLE);
+                            Handler handler = new Handler();
+                            handler.postDelayed(new Runnable() {
+                                @Override
+                                public void run() {
+                                    textView_facebook.setVisibility(View.VISIBLE);
+                                    textView_facebook.setText(tempUsername);
+                                }
+                            }, 200);
+                        }
+                    };
+//                    username = "";
+                    profileTracker.startTracking();
+                } else {
+                    Profile profile = Profile.getCurrentProfile();
+                    Log.v("facebook - profile", profile.getFirstName());
+                    final String username = profile.getName();
+
+                    button_facebook.setVisibility(View.INVISIBLE);
+                    Handler handler = new Handler();
+                    handler.postDelayed(new Runnable() {
+                        @Override
+                        public void run() {
+                            textView_facebook.setVisibility(View.VISIBLE);
+                            textView_facebook.setText(username);
+                        }
+                    }, 200);
+                }
             }
 
             @Override
@@ -89,6 +147,28 @@ public class RegistrationActivity extends AppCompatActivity {
                 Log.e(TAG, "FacebookCallback; onError");
             }
         });
+//        facebook_login_button.registerCallback(callbackManager, new FacebookCallback<LoginResult>() {
+//            @Override
+//            public void onSuccess(LoginResult loginResult) {
+//                Log.e(TAG, "FacebookCallback; onSuccess");
+//                String accessToken = loginResult.getAccessToken().getToken();
+//                PreferencesUtility.putString(RegistrationActivity.this,
+//                        PreferencesUtility.KEY_FACEBOOK_ACCESS_TOKEN, accessToken);
+//
+//                String userId = loginResult.getAccessToken().getUserId();
+//                PreferencesUtility.setFacebookUserId(RegistrationActivity.this, userId);
+//            }
+//
+//            @Override
+//            public void onCancel() {
+//                Log.e(TAG, "FacebookCallback; onCancel");
+//            }
+//
+//            @Override
+//            public void onError(FacebookException e) {
+//                Log.e(TAG, "FacebookCallback; onError");
+//            }
+//        });
     }
 
     public void onGoogleClick(View view) {
@@ -97,8 +177,11 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
     public void onFacebookClick(View view) {
-        Intent intent = new Intent(this, FacebookActivity.class);
-        startActivity(intent);
+//        Intent intent = new Intent(this, FacebookActivity.class);
+//        startActivity(intent);
+
+        LoginManager.getInstance().logInWithReadPermissions(this,
+                Arrays.asList("public_profile", "user_events"));
     }
 
     public void onFinishClick(View view) {

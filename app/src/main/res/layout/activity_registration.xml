@@ -54,6 +54,7 @@
             android:layout_height="wrap_content"
             android:layout_below="@+id/button_facebook"
             android:layout_marginBottom="@dimen/dimen24dp"
+            android:visibility="gone"
             android:layout_marginTop="@dimen/dimen24dp" />
 
         <TextView
@@ -61,7 +62,22 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="@dimen/dimen15dp"
-            android:gravity="center_horizontal"
+            android:gravity="center_vertical|left"
+            android:visibility="gone"
+            android:drawableLeft="@drawable/logo_google"
+            android:drawablePadding="@dimen/dimen15dp"
+            android:onClick="onGoogleClick"
+            tools:text="New Text" />
+
+        <TextView
+            android:id="@+id/textView_facebook"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="@dimen/dimen15dp"
+            android:gravity="center_vertical|left"
+            android:drawablePadding="@dimen/dimen15dp"
+            android:layout_alignTop="@+id/button_facebook"
+            android:drawableLeft="@drawable/logo_facebook"
             android:visibility="gone"
             tools:text="New Text" />
     </RelativeLayout>
