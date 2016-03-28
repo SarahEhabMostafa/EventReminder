@@ -1,5 +1,8 @@
 package com.sarahehabm.eventreminder.view;
 
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.database.Cursor;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.Fragment;
@@ -27,11 +30,15 @@ import com.sarahehabm.eventreminder.R;
 import com.sarahehabm.eventreminder.controller.database.EventsContract.EventEntry;
 import com.sarahehabm.eventreminder.controller.sync.SyncUtility;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * A placeholder fragment containing a simple view.
  */
 public class EventsActivityFragment extends Fragment
-        implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener {
+        implements LoaderManager.LoaderCallbacks<Cursor>, SwipeRefreshLayout.OnRefreshListener,
+        SendEmailInterface {
 
     private static final int LOADER = 0;
     private static final String TAG = EventsActivityFragment.class.getSimpleName();
@@ -65,6 +72,7 @@ public class EventsActivityFragment extends Fragment
         switch (itemId) {
             case R.id.action_settings:
                 //TODO open settings activity
+                Toast.makeText(getActivity(), "Coming soon", Toast.LENGTH_SHORT).show();
                 return true;
 
             case R.id.action_refresh:
@@ -106,7 +114,8 @@ public class EventsActivityFragment extends Fragment
         adapter = new EventsAdapter(getActivity());
         recyclerView.setAdapter(adapter);
 
-        ItemTouchHelper itemTouchHelper = new ItemTouchHelper(new EventsItemTouchHelperCallback());
+        ItemTouchHelper itemTouchHelper
+                = new ItemTouchHelper(new EventsItemTouchHelperCallback(getActivity(), this));
         itemTouchHelper.attachToRecyclerView(recyclerView);
 
         floatingActionButton = (FloatingActionButton) rootView.findViewById(R.id.fab);
@@ -114,7 +123,7 @@ public class EventsActivityFragment extends Fragment
             @Override
             public void onClick(View v) {
                 //TODO
-                Toast.makeText(getActivity(), "FAB clicked!", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getActivity(), "Coming soon", Toast.LENGTH_SHORT).show();
             }
         });
 
@@ -125,7 +134,7 @@ public class EventsActivityFragment extends Fragment
     public Loader<Cursor> onCreateLoader(int id, Bundle args) {
         return new CursorLoader(getActivity(), EventEntry.CONTENT_URI,
                 null, null, null,
-                EventEntry.COLUMN_EVENT_DATE + " ASC");
+                EventEntry.COLUMN_EVENT_START_DATE + " ASC");
     }
 
     @Override
@@ -155,5 +164,39 @@ public class EventsActivityFragment extends Fragment
     public void onRefresh() {
         Log.v(TAG, "Refreshing..");
         SyncUtility.requestSync();
+    }
+
+    @Override
+    public void onSendEmail(long suggestedTimeSlot, final String eventName, final String creatorEmail) {
+        final String formattedTime = new SimpleDateFormat("dd-MM-yyyy hh:mm a")
+                .format(new Date(suggestedTimeSlot));
+        AlertDialog.Builder alertDialogBuilder = new AlertDialog.Builder(getContext())
+                .setTitle("Event overlaps with another")
+                .setMessage("Suggested next empty slot is " + formattedTime)
+                .setPositiveButton("Use suggested".toUpperCase(), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startEmailIntent(creatorEmail, eventName, formattedTime);
+                    }
+                })
+                .setNegativeButton("Use another".toUpperCase(), new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        startEmailIntent(creatorEmail, eventName, null);
+                    }
+                });
+        alertDialogBuilder.show();
+    }
+
+    private void startEmailIntent(String to, String eventName, String timeSlot) {
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        intent.putExtra(Intent.EXTRA_EMAIL, new String[] {to});
+        intent.putExtra(Intent.EXTRA_SUBJECT, eventName);
+        String bodyText = "Kindly change the time of \'" + eventName + "\' as I won't be free.\n"
+                + (timeSlot==null?"" : timeSlot + " is a suitable time for me.");
+        intent.putExtra(Intent.EXTRA_TEXT, bodyText);
+
+        startActivity(Intent.createChooser(intent, "Send Email"));
     }
 }

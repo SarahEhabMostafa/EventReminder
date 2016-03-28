@@ -18,7 +18,8 @@ public class EventsContract {
 
         public static final String COLUMN_EVENT_ID = "_id";
         public static final String COLUMN_EVENT_TITLE = "title";
-        public static final String COLUMN_EVENT_DATE = "date";
+        public static final String COLUMN_EVENT_START_DATE = "start_date";
+        public static final String COLUMN_EVENT_END_DATE = "end_date";
         public static final String COLUMN_EVENT_STATUS = "status";
         public static final String COLUMN_EVENT_COLOR = "colorId";
         public static final String COLUMN_EVENT_CREATED_DATE = "created";
@@ -42,7 +43,8 @@ public class EventsContract {
         public static final String SQL_CREATE_STATEMENT = "CREATE TABLE " + TABLE_NAME + " ("
                 + COLUMN_EVENT_ID + " TEXT PRIMARY KEY NOT NULL, "
                 + COLUMN_EVENT_TITLE + " TEXT, "
-                + COLUMN_EVENT_DATE + " INTEGER, "
+                + COLUMN_EVENT_START_DATE + " INTEGER, "
+                + COLUMN_EVENT_END_DATE + " INTEGER, "
                 + COLUMN_EVENT_STATUS + " TEXT, "
                 + COLUMN_EVENT_LOCATION + " TEXT, "
                 + COLUMN_EVENT_CREATED_DATE + " TEXT, "

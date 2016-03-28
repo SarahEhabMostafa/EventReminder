@@ -50,10 +50,10 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
             public void onClick(View v) {
                 String id = (String) v.getTag(R.string.tag_event_id);
                 int position = (int) v.getTag(R.string.tag_item_position);
-                Toast.makeText(v.getContext(), "Item #" + position + " with id: " + id + " clicked.", Toast.LENGTH_SHORT).show();
+//                Toast.makeText(v.getContext(), "Item #" + position + " with id: " + id + " clicked.", Toast.LENGTH_SHORT).show();
+                Toast.makeText(v.getContext(), "Event already accepted/confirmed", Toast.LENGTH_SHORT).show();
                 Log.v(TAG, "Item #" + position + " with id: " + id + " clicked.");
 
-                //TODO handle click
             }
         });
 
@@ -66,9 +66,11 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
 
         String eventId = cursor.getString(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_ID));
         String eventTitle = cursor.getString(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_TITLE));
-        long eventDateMillis = cursor.getLong(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_DATE));
+        long eventStartDateMillis = cursor.getLong(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_START_DATE));
+        long eventEndDateMillis = cursor.getLong(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_END_DATE));
         String eventStatus = cursor.getString(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_STATUS));
         String eventLocation = cursor.getString(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_LOCATION));
+        String eventCreator = cursor.getString(cursor.getColumnIndex(EventEntry.COLUMN_EVENT_CREATOR));
 
         if (eventTitle != null && !eventTitle.trim().isEmpty() && !eventTitle.equalsIgnoreCase(NULL)) {
             holder.textViewTitle.setText(eventTitle);
@@ -77,8 +79,8 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
             holder.textViewTitle.setVisibility(View.GONE);
         }
 
-        if (eventDateMillis > 0) {
-            String eventDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date(eventDateMillis));
+        if (eventStartDateMillis > 0) {
+            String eventDate = new SimpleDateFormat("dd-MM-yyyy").format(new Date(eventStartDateMillis));
             holder.textViewDate.setText(eventDate);
             holder.textViewDate.setVisibility(View.VISIBLE);
         } else {
@@ -101,6 +103,9 @@ public class EventsAdapter extends RecyclerView.Adapter<EventsAdapter.ViewHolder
 
         holder.itemView.setTag(R.string.tag_event_id, eventId);
         holder.itemView.setTag(R.string.tag_item_position, position);
+        holder.itemView.setTag(R.string.tag_item_start_date, eventStartDateMillis);
+        holder.itemView.setTag(R.string.tag_item_end_date, eventEndDateMillis);
+        holder.itemView.setTag(R.string.tag_event_creator, eventCreator);
     }
 
     @Override

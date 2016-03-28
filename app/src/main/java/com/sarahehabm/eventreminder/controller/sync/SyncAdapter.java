@@ -22,6 +22,7 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.json.jackson2.JacksonFactory;
 import com.google.api.client.util.DateTime;
 import com.google.api.services.calendar.model.Event;
+import com.google.api.services.calendar.model.EventAttendee;
 import com.google.api.services.calendar.model.Events;
 import com.sarahehabm.eventreminder.controller.PreferencesUtility;
 import com.sarahehabm.eventreminder.controller.database.EventsContract.EventEntry;
@@ -77,6 +78,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
             List<Event> retrievedEvents;
             try {
                 DateTime now = new DateTime(System.currentTimeMillis());
+//                DateTime now = new DateTime(1451606400*1000);
                 Events events = mService.events().list("primary")
                         .setTimeMin(now)
                         .setOrderBy("startTime")
@@ -91,7 +93,6 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     Log.v(TAG, Calendar.getInstance().getTime().toString() + ": Inserted " + numInserted + " rows.");
                 }
             } catch (UserRecoverableAuthIOException e) {
-//                getContext().getContentResolver().notifyChange(EventsContract.BASE_CONTENT_URI, null, false);
                 //TODO handle authorization exception
             } catch (IOException e) {
                 e.printStackTrace();
@@ -113,6 +114,9 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                     " rsvp_status, id, type={attending, created, declined, maybe, not_replied}, " +
                     "owner, place, updated_time");
             parameters.putInt("limit", 100);
+            Calendar calendar = Calendar.getInstance();
+            parameters.putLong("since", calendar.getTimeInMillis()/1000);
+//            parameters.putLong("since", 1451606400);
             new GraphRequest(
                     AccessToken.getCurrentAccessToken(),
                     "/" + userId + "/events",
@@ -129,8 +133,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                                         JSONArray eventsArray = response.getJSONObject().getJSONArray("data");
                                         Log.v(TAG, "eventsArray size = " + eventsArray.length());
 
-                                        int numInserted = getContext().getContentResolver().bulkInsert(
-                                                EventEntry.CONTENT_URI, jsonArrayToContentValuesArray(eventsArray));
+                                        int numInserted = 0;
+                                        if(jsonArrayToContentValuesArray(eventsArray)!= null) {
+                                             numInserted = getContext().getContentResolver()
+                                                     .bulkInsert(EventEntry.CONTENT_URI
+                                                             , jsonArrayToContentValuesArray(eventsArray));
+                                        }
                                         Log.v(TAG, Calendar.getInstance().getTime().toString()
                                                 + ": FACEBOOK Inserted " + numInserted + " rows.");
                                     }
@@ -170,11 +178,37 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 ContentValues values = new ContentValues();
                 values.put(EventEntry.COLUMN_EVENT_ID, event.getId());
                 values.put(EventEntry.COLUMN_EVENT_TITLE, event.getSummary());
-                values.put(EventEntry.COLUMN_EVENT_STATUS, event.getStatus());
-                DateTime dateObj = event.getStart().getDate();
-                String date = "";
-                if (dateObj != null)
-                    values.put(EventEntry.COLUMN_EVENT_DATE, dateObj.getValue());
+
+                String status = event.getStatus();
+                List<EventAttendee> attendees = event.getAttendees();
+                if(attendees!=null) {
+                    for (EventAttendee attendee : attendees) {
+                        if (attendee.isSelf()) {
+                            status = attendee.getResponseStatus();
+                            break;
+                        }
+                    }
+                }
+                values.put(EventEntry.COLUMN_EVENT_STATUS, status);
+
+                DateTime startDateObj = event.getStart().getDate();
+                if (startDateObj != null)
+                    values.put(EventEntry.COLUMN_EVENT_START_DATE, startDateObj.getValue());
+                else {
+                    startDateObj = event.getStart().getDateTime();
+                    if(startDateObj!=null)
+                        values.put(EventEntry.COLUMN_EVENT_START_DATE, startDateObj.getValue());
+                }
+
+                DateTime endDateObject = event.getEnd().getDate();
+                if(endDateObject!=null) {
+                    values.put(EventEntry.COLUMN_EVENT_END_DATE, endDateObject.getValue());
+                } else {
+                    endDateObject = event.getEnd().getDateTime();
+                    if (endDateObject!=null)
+                        values.put(EventEntry.COLUMN_EVENT_END_DATE, endDateObject.getValue());
+                }
+
                 values.put(EventEntry.COLUMN_EVENT_COLOR, String.valueOf(event.getColorId()));
                 values.put(EventEntry.COLUMN_EVENT_CREATED_DATE, String.valueOf(event.getCreated()));
                 values.put(EventEntry.COLUMN_EVENT_CREATOR, String.valueOf(event.getCreator()));
@@ -208,9 +242,12 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 values.put(EventEntry.COLUMN_EVENT_STATUS, event.getString("rsvp_status"));
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ssZ");
-                Date dateObject = dateFormat.parse(event.getString("start_time"));
-                values.put(EventEntry.COLUMN_EVENT_DATE, dateObject.getTime());
-
+                Date startDateObject = dateFormat.parse(event.getString("start_time"));
+                values.put(EventEntry.COLUMN_EVENT_START_DATE, startDateObject.getTime());
+                if(event.has("end_time")) {
+                    Date endDateObject = dateFormat.parse(event.getString("end_time"));
+                    values.put(EventEntry.COLUMN_EVENT_END_DATE, endDateObject.getTime());
+                }
 //                                values.put(EventEntry.COLUMN_EVENT_COLOR, );
 //                                values.put(EventEntry.COLUMN_EVENT_CREATED_DATE, );
                 if (event.has("owner")) {

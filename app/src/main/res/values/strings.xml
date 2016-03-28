@@ -11,6 +11,9 @@
 
     <string name="tag_event_id" translatable="false">event_id</string>
     <string name="tag_item_position" translatable="false">item_position</string>
+    <string name="tag_item_start_date" translatable="false">event_start_date</string>
+    <string name="tag_item_end_date" translatable="false">event_end_date</string>
+    <string name="tag_event_creator" translatable="false">event_creator</string>
 
     <string name="facebook_app_id" translatable="false">575898549252373</string>
 
