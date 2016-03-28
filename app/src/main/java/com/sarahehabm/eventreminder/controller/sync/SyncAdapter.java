@@ -94,6 +94,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
                 }
             } catch (UserRecoverableAuthIOException e) {
                 //TODO handle authorization exception
+                e.printStackTrace();
             } catch (IOException e) {
                 e.printStackTrace();
             }
